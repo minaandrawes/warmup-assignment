@@ -8,14 +8,13 @@ const fs = require("fs");
 // ============================================================
 function getShiftDuration(startTime, endTime) {
 
-    // Step 1: convert a time string to total seconds
     function timeToSeconds(time) {
         let parts = time.trim().split(" ");
         let timeParts = parts[0].split(":");
         let hours = parseInt(timeParts[0]);
         let minutes = parseInt(timeParts[1]);
         let seconds = parseInt(timeParts[2]);
-        let period = parts[1]; // "am" or "pm"
+        let period = parts[1];
 
         if (period === "pm" && hours !== 12) hours += 12;
         if (period === "am" && hours === 12) hours = 0;
@@ -23,10 +22,8 @@ function getShiftDuration(startTime, endTime) {
         return hours * 3600 + minutes * 60 + seconds;
     }
 
-    // Step 2: subtract the two times
     let totalSeconds = timeToSeconds(endTime) - timeToSeconds(startTime);
 
-    // Step 3: convert seconds back to h:mm:ss
     let h = Math.floor(totalSeconds / 3600);
     let m = Math.floor((totalSeconds % 3600) / 60);
     let s = totalSeconds % 60;
@@ -70,8 +67,8 @@ function getIdleTime(startTime, endTime) {
 
     let start = timeToSeconds(startTime);
     let end = timeToSeconds(endTime);
-    let deliveryStart = 8 * 3600;   // 8:00 AM in seconds
-    let deliveryEnd = 22 * 3600;    // 10:00 PM in seconds
+    let deliveryStart = 8 * 3600;   
+    let deliveryEnd = 22 * 3600;    
 
     let idleBefore = 0;
     let idleAfter = 0;
@@ -150,7 +147,6 @@ function addShiftRecord(textFile, shiftObj) {
      let content = fs.readFileSync(textFile, "utf-8");
     let lines = content.trim().split("\n");
 
-    // Check for duplicate
     for (let i = 0; i < lines.length; i++) {
         let cols = lines[i].split(",");
         if (cols[0].trim() === shiftObj.driverID && cols[2].trim() === shiftObj.date) {
@@ -158,7 +154,6 @@ function addShiftRecord(textFile, shiftObj) {
         }
     }
 
-    // Calculate values
     let shiftDuration = getShiftDuration(shiftObj.startTime, shiftObj.endTime);
     let idleTime = getIdleTime(shiftObj.startTime, shiftObj.endTime);
     let activeTime = getActiveTime(shiftDuration, idleTime);
@@ -179,7 +174,6 @@ function addShiftRecord(textFile, shiftObj) {
 
     let newLine = `${newRecord.driverID},${newRecord.driverName},${newRecord.date},${newRecord.startTime},${newRecord.endTime},${newRecord.shiftDuration},${newRecord.idleTime},${newRecord.activeTime},${newRecord.metQuota},${newRecord.hasBonus}`;
 
-    // Find where to insert
     let lastIndex = -1;
     for (let i = 0; i < lines.length; i++) {
         if (lines[i].split(",")[0].trim() === shiftObj.driverID) {
